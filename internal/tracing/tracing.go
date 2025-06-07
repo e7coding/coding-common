@@ -31,8 +31,8 @@ func NewIDs() (traceID trace.TraceID, spanID trace.SpanID) {
 // NewTraceID creates and returns a trace ID.
 func NewTraceID() (traceID trace.TraceID) {
 	var (
-		timestampNanoBytes = dbinary.EncodeInt64(time.Now().UnixNano())
-		sequenceBytes      = dbinary.EncodeInt32(sequence.Add(1))
+		timestampNanoBytes = jbinary.EncodeInt64(time.Now().UnixNano())
+		sequenceBytes      = jbinary.EncodeInt32(sequence.Add(1))
 		randomBytes        = jrand.B(4)
 	)
 	copy(traceID[:], timestampNanoBytes)
@@ -43,7 +43,7 @@ func NewTraceID() (traceID trace.TraceID) {
 
 // NewSpanID creates and returns a span ID.
 func NewSpanID() (spanID trace.SpanID) {
-	copy(spanID[:], dbinary.EncodeInt64(time.Now().UnixNano()/1e3))
+	copy(spanID[:], jbinary.EncodeInt64(time.Now().UnixNano()/1e3))
 	copy(spanID[4:], jrand.B(4))
 	return
 }

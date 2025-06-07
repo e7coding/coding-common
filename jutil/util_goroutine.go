@@ -6,10 +6,6 @@
 
 package jutil
 
-import (
-	"context"
-)
-
 // Go creates a new asynchronous goroutine function with specified recover function.
 //
 // The parameter `recoverFunc` is called when any panic during executing of `goroutineFunc`.
@@ -18,12 +14,11 @@ import (
 //
 // But, note that, if `recoverFunc` also throws panic, such panic will be thrown to parent goroutine.
 func Go(
-	ctx context.Context,
-	goroutineFunc func(ctx context.Context),
-	recoverFunc func(ctx context.Context, exception error),
+	goroutineFunc func(),
+	recoverFunc func(exception error),
 ) {
 	if goroutineFunc == nil {
 		return
 	}
-	go TryCatch(ctx, goroutineFunc, recoverFunc)
+	go TryCatch(goroutineFunc, recoverFunc)
 }

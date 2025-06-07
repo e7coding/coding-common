@@ -7,7 +7,6 @@
 package jredis
 
 import (
-	"context"
 	"crypto/tls"
 	"github.com/e7coding/coding-common/errs/jerr"
 	"time"
@@ -63,7 +62,7 @@ func SetConfig(config *Config, name ...string) {
 	}
 	localConfigMap.Put(group, config)
 
-	intlog.Printf(context.TODO(), `SetConfig for group "%s": %+v`, group, config)
+	intlog.Printf(`SetConfig for group "%s": %+v`, group, config)
 }
 
 // SetConfigByMap sets the global configuration for specified group with map.
@@ -133,7 +132,7 @@ func RemoveConfig(name ...string) {
 	}
 	localConfigMap.Del(group)
 
-	intlog.Printf(context.TODO(), `RemoveConfig: %s`, group)
+	intlog.Printf(`RemoveConfig: %s`, group)
 }
 
 // ClearConfig removes all configurations of redis.

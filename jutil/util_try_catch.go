@@ -7,7 +7,6 @@
 package jutil
 
 import (
-	"context"
 	"github.com/e7coding/coding-common/errs/jerr"
 )
 
@@ -18,7 +17,7 @@ func Throw(exception interface{}) {
 
 // Try implements try... logistics using internal panic...recover.
 // It returns error if any exception occurs, or else it returns nil.
-func Try(ctx context.Context, try func(ctx context.Context)) (err error) {
+func Try(try func()) (err error) {
 	if try == nil {
 		return
 	}
@@ -31,7 +30,7 @@ func Try(ctx context.Context, try func(ctx context.Context)) (err error) {
 			}
 		}
 	}()
-	try(ctx)
+	try()
 	return
 }
 
@@ -40,11 +39,11 @@ func Try(ctx context.Context, try func(ctx context.Context)) (err error) {
 // If `catch` is given nil, it ignores the panic from `try` and no panic will throw to parent goroutine.
 //
 // But, note that, if function `catch` also throws panic, the current goroutine will panic.
-func TryCatch(ctx context.Context, try func(ctx context.Context), catch func(ctx context.Context, exception error)) {
+func TryCatch(try func(), catch func(exception error)) {
 	if try == nil {
 		return
 	}
-	if exception := Try(ctx, try); exception != nil && catch != nil {
-		catch(ctx, exception)
+	if exception := Try(try); exception != nil && catch != nil {
+		catch(exception)
 	}
 }

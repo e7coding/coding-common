@@ -7,7 +7,6 @@
 package jproc
 
 import (
-	"context"
 	"fmt"
 	"github.com/e7coding/coding-common/container/jmap"
 	"github.com/e7coding/coding-common/errs/jerr"
@@ -80,7 +79,7 @@ func getPortByPid(pid int) int {
 func getCommFilePath(pid int) string {
 	path, err := getCommPidFolderPath()
 	if err != nil {
-		intlog.Errorf(context.TODO(), `%+v`, err)
+		intlog.Errorf(`%+v`, err)
 		return ""
 	}
 	return jfile.Join(path, jconv.String(pid))

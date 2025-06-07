@@ -10,7 +10,6 @@
 package jtime
 
 import (
-	"context"
 	"fmt"
 	"github.com/e7coding/coding-common/errs/jerr"
 	"regexp"
@@ -350,7 +349,7 @@ func ParseTimeFromContent(content string, format ...string) *Time {
 		for _, item := range format {
 			match, err = jregex.MatchString(formatToRegexPattern(item), content)
 			if err != nil {
-				intlog.Errorf(context.TODO(), `%+v`, err)
+				intlog.Errorf(`%+v`, err)
 			}
 			if len(match) > 0 {
 				return NewFromStrFormat(match[0], item)

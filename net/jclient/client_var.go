@@ -83,12 +83,12 @@ func (c *Client) TraceVar(ctx context.Context, url string, data ...interface{}) 
 func (c *Client) RequestVar(ctx context.Context, method string, url string, data ...interface{}) *jvar.Var {
 	response, err := c.DoRequest(ctx, method, url, data...)
 	if err != nil {
-		intlog.Errorf(ctx, `%+v`, err)
+		intlog.Errorf(`%+v`, err)
 		return jvar.New(nil)
 	}
 	defer func() {
 		if err = response.Close(); err != nil {
-			intlog.Errorf(ctx, `%+v`, err)
+			intlog.Errorf(`%+v`, err)
 		}
 	}()
 	return jvar.New(response.ReadAll())

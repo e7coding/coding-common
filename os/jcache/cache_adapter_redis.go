@@ -7,7 +7,6 @@
 package jcache
 
 import (
-	"context"
 	"github.com/e7coding/coding-common/jredis"
 	"time"
 
@@ -31,15 +30,15 @@ func NewAdapterRedis(redis *jredis.Redis) *AdapterRedis {
 //
 // It does not expire if `duration` == 0.
 // It deletes the keys of `data` if `duration` < 0 or given `value` is nil.
-func (c *AdapterRedis) Set(ctx context.Context, key interface{}, value interface{}, duration time.Duration) (err error) {
+func (c *AdapterRedis) Set(key interface{}, value interface{}, duration time.Duration) (err error) {
 	redisKey := jconv.String(key)
 	if value == nil || duration < 0 {
-		_, err = c.redis.Del(ctx, redisKey)
+		_, err = c.redis.Del(redisKey)
 	} else {
 		if duration == 0 {
-			_, err = c.redis.Set(ctx, redisKey, value)
+			_, err = c.redis.Set(redisKey, value)
 		} else {
-			_, err = c.redis.Set(ctx, redisKey, value, jredis.SetOption{TTLOption: jredis.TTLOption{PX: jconv.PtrInt64(duration.Milliseconds())}})
+			_, err = c.redis.Set(redisKey, value, jredis.SetOption{TTLOption: jredis.TTLOption{PX: jconv.PtrInt64(duration.Milliseconds())}})
 		}
 	}
 	return err
@@ -49,7 +48,7 @@ func (c *AdapterRedis) Set(ctx context.Context, key interface{}, value interface
 //
 // It does not expire if `duration` == 0.
 // It deletes the keys of `data` if `duration` < 0 or given `value` is nil.
-func (c *AdapterRedis) SetMap(ctx context.Context, data map[interface{}]interface{}, duration time.Duration) error {
+func (c *AdapterRedis) SetMap(data map[interface{}]interface{}, duration time.Duration) error {
 	if len(data) == 0 {
 		return nil
 	}
@@ -63,13 +62,13 @@ func (c *AdapterRedis) SetMap(ctx context.Context, data map[interface{}]interfac
 			keys[index] = jconv.String(k)
 			index += 1
 		}
-		_, err := c.redis.Del(ctx, keys...)
+		_, err := c.redis.Del(keys...)
 		if err != nil {
 			return err
 		}
 	}
 	if duration == 0 {
-		err := c.redis.MSet(ctx, jconv.Map(data))
+		err := c.redis.MSet(jconv.Map(data))
 		if err != nil {
 			return err
 		}
@@ -77,7 +76,7 @@ func (c *AdapterRedis) SetMap(ctx context.Context, data map[interface{}]interfac
 	if duration > 0 {
 		var err error
 		for k, v := range data {
-			if err = c.Set(ctx, k, v, duration); err != nil {
+			if err = c.Set(k, v, duration); err != nil {
 				return err
 			}
 		}
@@ -91,7 +90,7 @@ func (c *AdapterRedis) SetMap(ctx context.Context, data map[interface{}]interfac
 //
 // It does not expire if `duration` == 0.
 // It deletes the `key` if `duration` < 0 or given `value` is nil.
-func (c *AdapterRedis) SetIfNotExist(ctx context.Context, key interface{}, value interface{}, duration time.Duration) (bool, error) {
+func (c *AdapterRedis) SetIfNotExist(key interface{}, value interface{}, duration time.Duration) (bool, error) {
 	var (
 		err      error
 		redisKey = jconv.String(key)
@@ -100,17 +99,17 @@ func (c *AdapterRedis) SetIfNotExist(ctx context.Context, key interface{}, value
 	f, ok := value.(Func)
 	if !ok {
 		// Compatible with raw function value.
-		f, ok = value.(func(ctx context.Context) (value interface{}, err error))
+		f, ok = value.(func() (value interface{}, err error))
 	}
 	if ok {
-		if value, err = f(ctx); err != nil {
+		if value, err = f(); err != nil {
 			return false, err
 		}
 	}
 	// DEL.
 	if duration < 0 || value == nil {
 		var delResult int64
-		delResult, err = c.redis.Del(ctx, redisKey)
+		delResult, err = c.redis.Del(redisKey)
 		if err != nil {
 			return false, err
 		}
@@ -119,13 +118,13 @@ func (c *AdapterRedis) SetIfNotExist(ctx context.Context, key interface{}, value
 		}
 		return false, err
 	}
-	ok, err = c.redis.SetNX(ctx, redisKey, value)
+	ok, err = c.redis.SetNX(redisKey, value)
 	if err != nil {
 		return ok, err
 	}
 	if ok && duration > 0 {
 		// Set the expiration.
-		_, err = c.redis.PExpire(ctx, redisKey, duration.Milliseconds())
+		_, err = c.redis.PExpire(redisKey, duration.Milliseconds())
 		if err != nil {
 			return ok, err
 		}
@@ -142,12 +141,12 @@ func (c *AdapterRedis) SetIfNotExist(ctx context.Context, key interface{}, value
 //
 // It does not expire if `duration` == 0.
 // It deletes the `key` if `duration` < 0 or given `value` is nil.
-func (c *AdapterRedis) SetIfNotExistFunc(ctx context.Context, key interface{}, f Func, duration time.Duration) (ok bool, err error) {
-	value, err := f(ctx)
+func (c *AdapterRedis) SetIfNotExistFunc(key interface{}, f Func, duration time.Duration) (ok bool, err error) {
+	value, err := f()
 	if err != nil {
 		return false, err
 	}
-	return c.SetIfNotExist(ctx, key, value, duration)
+	return c.SetIfNotExist(key, value, duration)
 }
 
 // SetIfNotExistFuncLock sets `key` with result of function `f` and returns true
@@ -158,18 +157,18 @@ func (c *AdapterRedis) SetIfNotExistFunc(ctx context.Context, key interface{}, f
 //
 // Note that it differs from function `SetIfNotExistFunc` is that the function `f` is executed within
 // writing mutex lock for concurrent safety purpose.
-func (c *AdapterRedis) SetIfNotExistFuncLock(ctx context.Context, key interface{}, f Func, duration time.Duration) (ok bool, err error) {
-	value, err := f(ctx)
+func (c *AdapterRedis) SetIfNotExistFuncLock(key interface{}, f Func, duration time.Duration) (ok bool, err error) {
+	value, err := f()
 	if err != nil {
 		return false, err
 	}
-	return c.SetIfNotExist(ctx, key, value, duration)
+	return c.SetIfNotExist(key, value, duration)
 }
 
 // Get retrieves and returns the associated value of given <key>.
 // It returns nil if it does not exist or its value is nil.
-func (c *AdapterRedis) Get(ctx context.Context, key interface{}) (*jvar.Var, error) {
-	return c.redis.Get(ctx, jconv.String(key))
+func (c *AdapterRedis) Get(key interface{}) (*jvar.Var, error) {
+	return c.redis.Get(jconv.String(key))
 }
 
 // GetOrSet retrieves and returns the value of `key`, or sets `key`-`value` pair and
@@ -179,13 +178,13 @@ func (c *AdapterRedis) Get(ctx context.Context, key interface{}) (*jvar.Var, err
 // It does not expire if `duration` == 0.
 // It deletes the `key` if `duration` < 0 or given `value` is nil, but it does nothing
 // if `value` is a function and the function result is nil.
-func (c *AdapterRedis) GetOrSet(ctx context.Context, key interface{}, value interface{}, duration time.Duration) (result *jvar.Var, err error) {
-	result, err = c.Get(ctx, key)
+func (c *AdapterRedis) GetOrSet(key interface{}, value interface{}, duration time.Duration) (result *jvar.Var, err error) {
+	result, err = c.Get(key)
 	if err != nil {
 		return nil, err
 	}
 	if result.IsNil() {
-		return jvar.New(value), c.Set(ctx, key, value, duration)
+		return jvar.New(value), c.Set(key, value, duration)
 	}
 	return
 }
@@ -197,20 +196,20 @@ func (c *AdapterRedis) GetOrSet(ctx context.Context, key interface{}, value inte
 // It does not expire if `duration` == 0.
 // It deletes the `key` if `duration` < 0 or given `value` is nil, but it does nothing
 // if `value` is a function and the function result is nil.
-func (c *AdapterRedis) GetOrSetFunc(ctx context.Context, key interface{}, f Func, duration time.Duration) (result *jvar.Var, err error) {
-	v, err := c.Get(ctx, key)
+func (c *AdapterRedis) GetOrSetFunc(key interface{}, f Func, duration time.Duration) (result *jvar.Var, err error) {
+	v, err := c.Get(key)
 	if err != nil {
 		return nil, err
 	}
 	if v.IsNil() {
-		value, err := f(ctx)
+		value, err := f()
 		if err != nil {
 			return nil, err
 		}
 		if value == nil {
 			return nil, nil
 		}
-		return jvar.New(value), c.Set(ctx, key, value, duration)
+		return jvar.New(value), c.Set(key, value, duration)
 	} else {
 		return v, nil
 	}
@@ -226,13 +225,13 @@ func (c *AdapterRedis) GetOrSetFunc(ctx context.Context, key interface{}, f Func
 //
 // Note that it differs from function `GetOrSetFunc` is that the function `f` is executed within
 // writing mutex lock for concurrent safety purpose.
-func (c *AdapterRedis) GetOrSetFuncLock(ctx context.Context, key interface{}, f Func, duration time.Duration) (result *jvar.Var, err error) {
-	return c.GetOrSetFunc(ctx, key, f, duration)
+func (c *AdapterRedis) GetOrSetFuncLock(key interface{}, f Func, duration time.Duration) (result *jvar.Var, err error) {
+	return c.GetOrSetFunc(key, f, duration)
 }
 
 // Contains checks and returns true if `key` exists in the cache, or else returns false.
-func (c *AdapterRedis) Contains(ctx context.Context, key interface{}) (bool, error) {
-	n, err := c.redis.Exists(ctx, jconv.String(key))
+func (c *AdapterRedis) Contains(key interface{}) (bool, error) {
+	n, err := c.redis.Exists(jconv.String(key))
 	if err != nil {
 		return false, err
 	}
@@ -240,8 +239,8 @@ func (c *AdapterRedis) Contains(ctx context.Context, key interface{}) (bool, err
 }
 
 // Size returns the number of items in the cache.
-func (c *AdapterRedis) Size(ctx context.Context) (size int, err error) {
-	n, err := c.redis.DBSize(ctx)
+func (c *AdapterRedis) Size() (size int, err error) {
+	n, err := c.redis.DBSize()
 	if err != nil {
 		return 0, err
 	}
@@ -251,15 +250,15 @@ func (c *AdapterRedis) Size(ctx context.Context) (size int, err error) {
 // Data returns a copy of all key-value pairs in the cache as map type.
 // Note that this function may lead lots of memory usage, you can implement this function
 // if necessary.
-func (c *AdapterRedis) Data(ctx context.Context) (map[interface{}]interface{}, error) {
+func (c *AdapterRedis) Data() (map[interface{}]interface{}, error) {
 	// Keys.
-	keys, err := c.redis.Keys(ctx, "*")
+	keys, err := c.redis.Keys("*")
 	if err != nil {
 		return nil, err
 	}
 	// Key-Value pairs.
 	var m map[string]*jvar.Var
-	m, err = c.redis.MGet(ctx, keys...)
+	m, err = c.redis.MGet(keys...)
 	if err != nil {
 		return nil, err
 	}
@@ -272,8 +271,8 @@ func (c *AdapterRedis) Data(ctx context.Context) (map[interface{}]interface{}, e
 }
 
 // Keys returns all keys in the cache as slice.
-func (c *AdapterRedis) Keys(ctx context.Context) ([]interface{}, error) {
-	keys, err := c.redis.Keys(ctx, "*")
+func (c *AdapterRedis) Keys() ([]interface{}, error) {
+	keys, err := c.redis.Keys("*")
 	if err != nil {
 		return nil, err
 	}
@@ -281,15 +280,15 @@ func (c *AdapterRedis) Keys(ctx context.Context) ([]interface{}, error) {
 }
 
 // Values returns all values in the cache as slice.
-func (c *AdapterRedis) Values(ctx context.Context) ([]interface{}, error) {
+func (c *AdapterRedis) Values() ([]interface{}, error) {
 	// Keys.
-	keys, err := c.redis.Keys(ctx, "*")
+	keys, err := c.redis.Keys("*")
 	if err != nil {
 		return nil, err
 	}
 	// Key-Value pairs.
 	var m map[string]*jvar.Var
-	m, err = c.redis.MGet(ctx, keys...)
+	m, err = c.redis.MGet(keys...)
 	if err != nil {
 		return nil, err
 	}
@@ -308,14 +307,14 @@ func (c *AdapterRedis) Values(ctx context.Context) ([]interface{}, error) {
 //
 // It deletes the `key` if given `value` is nil.
 // It does nothing if `key` does not exist in the cache.
-func (c *AdapterRedis) Update(ctx context.Context, key interface{}, value interface{}) (oldValue *jvar.Var, exist bool, err error) {
+func (c *AdapterRedis) Update(key interface{}, value interface{}) (oldValue *jvar.Var, exist bool, err error) {
 	var (
 		v        *jvar.Var
 		oldPTTL  int64
 		redisKey = jconv.String(key)
 	)
 	// TTL.
-	oldPTTL, err = c.redis.PTTL(ctx, redisKey) // update ttl -> pttl(millisecond)
+	oldPTTL, err = c.redis.PTTL(redisKey) // update ttl -> pttl(millisecond)
 	if err != nil {
 		return
 	}
@@ -324,14 +323,14 @@ func (c *AdapterRedis) Update(ctx context.Context, key interface{}, value interf
 		return
 	}
 	// Check existence.
-	v, err = c.redis.Get(ctx, redisKey)
+	v, err = c.redis.Get(redisKey)
 	if err != nil {
 		return
 	}
 	oldValue = v
 	// DEL.
 	if value == nil {
-		_, err = c.redis.Del(ctx, redisKey)
+		_, err = c.redis.Del(redisKey)
 		if err != nil {
 			return
 		}
@@ -339,11 +338,11 @@ func (c *AdapterRedis) Update(ctx context.Context, key interface{}, value interf
 	}
 	// Update the value.
 	if oldPTTL == -1 {
-		_, err = c.redis.Set(ctx, redisKey, value)
+		_, err = c.redis.Set(redisKey, value)
 	} else {
 		// update SetEX -> SET PX Option(millisecond)
 		// Starting with Redis version 2.6.12: Added the EX, PX, NX and XX options.
-		_, err = c.redis.Set(ctx, redisKey, value, jredis.SetOption{TTLOption: jredis.TTLOption{PX: jconv.PtrInt64(oldPTTL)}})
+		_, err = c.redis.Set(redisKey, value, jredis.SetOption{TTLOption: jredis.TTLOption{PX: jconv.PtrInt64(oldPTTL)}})
 	}
 	return oldValue, true, err
 }
@@ -352,14 +351,14 @@ func (c *AdapterRedis) Update(ctx context.Context, key interface{}, value interf
 //
 // It returns -1 and does nothing if the `key` does not exist in the cache.
 // It deletes the `key` if `duration` < 0.
-func (c *AdapterRedis) UpdateExpire(ctx context.Context, key interface{}, duration time.Duration) (oldDuration time.Duration, err error) {
+func (c *AdapterRedis) UpdateExpire(key interface{}, duration time.Duration) (oldDuration time.Duration, err error) {
 	var (
 		v        *jvar.Var
 		oldPTTL  int64
 		redisKey = jconv.String(key)
 	)
 	// TTL.
-	oldPTTL, err = c.redis.PTTL(ctx, redisKey)
+	oldPTTL, err = c.redis.PTTL(redisKey)
 	if err != nil {
 		return
 	}
@@ -371,20 +370,20 @@ func (c *AdapterRedis) UpdateExpire(ctx context.Context, key interface{}, durati
 	oldDuration = time.Duration(oldPTTL) * time.Millisecond
 	// DEL.
 	if duration < 0 {
-		_, err = c.redis.Del(ctx, redisKey)
+		_, err = c.redis.Del(redisKey)
 		return
 	}
 	// Update the expiration.
 	if duration > 0 {
-		_, err = c.redis.PExpire(ctx, redisKey, duration.Milliseconds())
+		_, err = c.redis.PExpire(redisKey, duration.Milliseconds())
 	}
 	// No expire.
 	if duration == 0 {
-		v, err = c.redis.Get(ctx, redisKey)
+		v, err = c.redis.Get(redisKey)
 		if err != nil {
 			return
 		}
-		_, err = c.redis.Set(ctx, redisKey, v.Val())
+		_, err = c.redis.Set(redisKey, v.Val())
 	}
 	return
 }
@@ -394,8 +393,8 @@ func (c *AdapterRedis) UpdateExpire(ctx context.Context, key interface{}, durati
 // Note that,
 // It returns 0 if the `key` does not expire.
 // It returns -1 if the `key` does not exist in the cache.
-func (c *AdapterRedis) GetExpire(ctx context.Context, key interface{}) (time.Duration, error) {
-	pttl, err := c.redis.PTTL(ctx, jconv.String(key))
+func (c *AdapterRedis) GetExpire(key interface{}) (time.Duration, error) {
+	pttl, err := c.redis.PTTL(jconv.String(key))
 	if err != nil {
 		return 0, err
 	}
@@ -411,30 +410,30 @@ func (c *AdapterRedis) GetExpire(ctx context.Context, key interface{}) (time.Dur
 
 // Remove deletes the one or more keys from cache, and returns its value.
 // If multiple keys are given, it returns the value of the deleted last item.
-func (c *AdapterRedis) Remove(ctx context.Context, keys ...interface{}) (lastValue *jvar.Var, err error) {
+func (c *AdapterRedis) Remove(keys ...interface{}) (lastValue *jvar.Var, err error) {
 	if len(keys) == 0 {
 		return nil, nil
 	}
 	// Retrieves the last key value.
-	if lastValue, err = c.redis.Get(ctx, jconv.String(keys[len(keys)-1])); err != nil {
+	if lastValue, err = c.redis.Get(jconv.String(keys[len(keys)-1])); err != nil {
 		return nil, err
 	}
 	// Deletes all given keys.
-	_, err = c.redis.Del(ctx, jconv.Strings(keys)...)
+	_, err = c.redis.Del(jconv.Strings(keys)...)
 	return
 }
 
 // Clear clears all data of the cache.
 // Note that this function is sensitive and should be carefully used.
 // It uses `FLUSHDB` command in redis server, which might be disabled in server.
-func (c *AdapterRedis) Clear(ctx context.Context) (err error) {
+func (c *AdapterRedis) Clear() (err error) {
 	// The "FLUSHDB" may not be available.
-	err = c.redis.FlushDB(ctx)
+	err = c.redis.FlushDB()
 	return
 }
 
 // Close closes the cache.
-func (c *AdapterRedis) Close(ctx context.Context) error {
+func (c *AdapterRedis) Close() error {
 	// It does nothing.
 	return nil
 }

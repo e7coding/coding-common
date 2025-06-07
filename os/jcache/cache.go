@@ -10,13 +10,12 @@
 package jcache
 
 import (
-	"context"
 	"github.com/e7coding/coding-common/container/jvar"
 	"time"
 )
 
 // Func is the cache function that calculates and returns the value.
-type Func = func(ctx context.Context) (value interface{}, err error)
+type Func = func() (value interface{}, err error)
 
 // DurationNoExpire represents the cache key-value pair that never expires.
 const DurationNoExpire = time.Duration(0)
@@ -28,16 +27,16 @@ var defaultCache = New()
 //
 // It does not expire if `duration` == 0.
 // It deletes the keys of `data` if `duration` < 0 or given `value` is nil.
-func Set(ctx context.Context, key interface{}, value interface{}, duration time.Duration) error {
-	return defaultCache.Set(ctx, key, value, duration)
+func Set(key interface{}, value interface{}, duration time.Duration) error {
+	return defaultCache.Set(key, value, duration)
 }
 
 // SetMap batch sets cache with key-value pairs by `data` map, which is expired after `duration`.
 //
 // It does not expire if `duration` == 0.
 // It deletes the keys of `data` if `duration` < 0 or given `value` is nil.
-func SetMap(ctx context.Context, data map[interface{}]interface{}, duration time.Duration) error {
-	return defaultCache.SetMap(ctx, data, duration)
+func SetMap(data map[interface{}]interface{}, duration time.Duration) error {
+	return defaultCache.SetMap(data, duration)
 }
 
 // SetIfNotExist sets cache with `key`-`value` pair which is expired after `duration`
@@ -46,8 +45,8 @@ func SetMap(ctx context.Context, data map[interface{}]interface{}, duration time
 //
 // It does not expire if `duration` == 0.
 // It deletes the `key` if `duration` < 0 or given `value` is nil.
-func SetIfNotExist(ctx context.Context, key interface{}, value interface{}, duration time.Duration) (bool, error) {
-	return defaultCache.SetIfNotExist(ctx, key, value, duration)
+func SetIfNotExist(key interface{}, value interface{}, duration time.Duration) (bool, error) {
+	return defaultCache.SetIfNotExist(key, value, duration)
 }
 
 // SetIfNotExistFunc sets `key` with result of function `f` and returns true
@@ -58,8 +57,8 @@ func SetIfNotExist(ctx context.Context, key interface{}, value interface{}, dura
 //
 // It does not expire if `duration` == 0.
 // It deletes the `key` if `duration` < 0 or given `value` is nil.
-func SetIfNotExistFunc(ctx context.Context, key interface{}, f Func, duration time.Duration) (bool, error) {
-	return defaultCache.SetIfNotExistFunc(ctx, key, f, duration)
+func SetIfNotExistFunc(key interface{}, f Func, duration time.Duration) (bool, error) {
+	return defaultCache.SetIfNotExistFunc(key, f, duration)
 }
 
 // SetIfNotExistFuncLock sets `key` with result of function `f` and returns true
@@ -70,15 +69,15 @@ func SetIfNotExistFunc(ctx context.Context, key interface{}, f Func, duration ti
 //
 // Note that it differs from function `SetIfNotExistFunc` is that the function `f` is executed within
 // writing mutex lock for concurrent safety purpose.
-func SetIfNotExistFuncLock(ctx context.Context, key interface{}, f Func, duration time.Duration) (bool, error) {
-	return defaultCache.SetIfNotExistFuncLock(ctx, key, f, duration)
+func SetIfNotExistFuncLock(key interface{}, f Func, duration time.Duration) (bool, error) {
+	return defaultCache.SetIfNotExistFuncLock(key, f, duration)
 }
 
 // Get retrieves and returns the associated value of given `key`.
 // It returns nil if it does not exist, or its value is nil, or it's expired.
 // If you would like to check if the `key` exists in the cache, it's better using function Contains.
-func Get(ctx context.Context, key interface{}) (*jvar.Var, error) {
-	return defaultCache.Get(ctx, key)
+func Get(key interface{}) (*jvar.Var, error) {
+	return defaultCache.Get(key)
 }
 
 // GetOrSet retrieves and returns the value of `key`, or sets `key`-`value` pair and
@@ -88,8 +87,8 @@ func Get(ctx context.Context, key interface{}) (*jvar.Var, error) {
 // It does not expire if `duration` == 0.
 // It deletes the `key` if `duration` < 0 or given `value` is nil, but it does nothing
 // if `value` is a function and the function result is nil.
-func GetOrSet(ctx context.Context, key interface{}, value interface{}, duration time.Duration) (*jvar.Var, error) {
-	return defaultCache.GetOrSet(ctx, key, value, duration)
+func GetOrSet(key interface{}, value interface{}, duration time.Duration) (*jvar.Var, error) {
+	return defaultCache.GetOrSet(key, value, duration)
 }
 
 // GetOrSetFunc retrieves and returns the value of `key`, or sets `key` with result of
@@ -99,8 +98,8 @@ func GetOrSet(ctx context.Context, key interface{}, value interface{}, duration 
 // It does not expire if `duration` == 0.
 // It deletes the `key` if `duration` < 0 or given `value` is nil, but it does nothing
 // if `value` is a function and the function result is nil.
-func GetOrSetFunc(ctx context.Context, key interface{}, f Func, duration time.Duration) (*jvar.Var, error) {
-	return defaultCache.GetOrSetFunc(ctx, key, f, duration)
+func GetOrSetFunc(key interface{}, f Func, duration time.Duration) (*jvar.Var, error) {
+	return defaultCache.GetOrSetFunc(key, f, duration)
 }
 
 // GetOrSetFuncLock retrieves and returns the value of `key`, or sets `key` with result of
@@ -113,13 +112,13 @@ func GetOrSetFunc(ctx context.Context, key interface{}, f Func, duration time.Du
 //
 // Note that it differs from function `GetOrSetFunc` is that the function `f` is executed within
 // writing mutex lock for concurrent safety purpose.
-func GetOrSetFuncLock(ctx context.Context, key interface{}, f Func, duration time.Duration) (*jvar.Var, error) {
-	return defaultCache.GetOrSetFuncLock(ctx, key, f, duration)
+func GetOrSetFuncLock(key interface{}, f Func, duration time.Duration) (*jvar.Var, error) {
+	return defaultCache.GetOrSetFuncLock(key, f, duration)
 }
 
 // Contains checks and returns true if `key` exists in the cache, or else returns false.
-func Contains(ctx context.Context, key interface{}) (bool, error) {
-	return defaultCache.Contains(ctx, key)
+func Contains(key interface{}) (bool, error) {
+	return defaultCache.Contains(key)
 }
 
 // GetExpire retrieves and returns the expiration of `key` in the cache.
@@ -127,19 +126,19 @@ func Contains(ctx context.Context, key interface{}) (bool, error) {
 // Note that,
 // It returns 0 if the `key` does not expire.
 // It returns -1 if the `key` does not exist in the cache.
-func GetExpire(ctx context.Context, key interface{}) (time.Duration, error) {
-	return defaultCache.GetExpire(ctx, key)
+func GetExpire(key interface{}) (time.Duration, error) {
+	return defaultCache.GetExpire(key)
 }
 
 // Remove deletes one or more keys from cache, and returns its value.
 // If multiple keys are given, it returns the value of the last deleted item.
-func Remove(ctx context.Context, keys ...interface{}) (value *jvar.Var, err error) {
-	return defaultCache.Remove(ctx, keys...)
+func Remove(keys ...interface{}) (value *jvar.Var, err error) {
+	return defaultCache.Remove(keys...)
 }
 
 // Removes deletes `keys` in the cache.
-func Removes(ctx context.Context, keys []interface{}) error {
-	return defaultCache.Removes(ctx, keys)
+func Removes(keys []interface{}) error {
+	return defaultCache.Removes(keys)
 }
 
 // Update updates the value of `key` without changing its expiration and returns the old value.
@@ -147,41 +146,41 @@ func Removes(ctx context.Context, keys []interface{}) error {
 //
 // It deletes the `key` if given `value` is nil.
 // It does nothing if `key` does not exist in the cache.
-func Update(ctx context.Context, key interface{}, value interface{}) (oldValue *jvar.Var, exist bool, err error) {
-	return defaultCache.Update(ctx, key, value)
+func Update(key interface{}, value interface{}) (oldValue *jvar.Var, exist bool, err error) {
+	return defaultCache.Update(key, value)
 }
 
 // UpdateExpire updates the expiration of `key` and returns the old expiration duration value.
 //
 // It returns -1 and does nothing if the `key` does not exist in the cache.
 // It deletes the `key` if `duration` < 0.
-func UpdateExpire(ctx context.Context, key interface{}, duration time.Duration) (oldDuration time.Duration, err error) {
-	return defaultCache.UpdateExpire(ctx, key, duration)
+func UpdateExpire(key interface{}, duration time.Duration) (oldDuration time.Duration, err error) {
+	return defaultCache.UpdateExpire(key, duration)
 }
 
 // Size returns the number of items in the cache.
-func Size(ctx context.Context) (int, error) {
-	return defaultCache.Size(ctx)
+func Size() (int, error) {
+	return defaultCache.Size()
 }
 
 // Data returns a copy of all key-value pairs in the cache as map type.
 // Note that this function may lead lots of memory usage, you can implement this function
 // if necessary.
-func Data(ctx context.Context) (map[interface{}]interface{}, error) {
-	return defaultCache.Data(ctx)
+func Data() (map[interface{}]interface{}, error) {
+	return defaultCache.Data()
 }
 
 // Keys returns all keys in the cache as slice.
-func Keys(ctx context.Context) ([]interface{}, error) {
-	return defaultCache.Keys(ctx)
+func Keys() ([]interface{}, error) {
+	return defaultCache.Keys()
 }
 
 // KeyStrings returns all keys in the cache as string slice.
-func KeyStrings(ctx context.Context) ([]string, error) {
-	return defaultCache.KeyStrings(ctx)
+func KeyStrings() ([]string, error) {
+	return defaultCache.KeyStrings()
 }
 
 // Values returns all values in the cache as slice.
-func Values(ctx context.Context) ([]interface{}, error) {
-	return defaultCache.Values(ctx)
+func Values() ([]interface{}, error) {
+	return defaultCache.Values()
 }

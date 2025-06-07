@@ -8,7 +8,6 @@
 package jfsnotify
 
 import (
-	"context"
 	"github.com/e7coding/coding-common/container/jmap"
 	"github.com/e7coding/coding-common/errs/jerr"
 	"sync"
@@ -107,7 +106,7 @@ func New() (*Watcher, error) {
 	if watcher, err := fsnotify.NewWatcher(); err == nil {
 		w.watcher = watcher
 	} else {
-		intlog.Printf(context.TODO(), "New watcher failed: %v", err)
+		intlog.Printf("New watcher failed: %v", err)
 		return nil, err
 	}
 	go w.watchLoop()

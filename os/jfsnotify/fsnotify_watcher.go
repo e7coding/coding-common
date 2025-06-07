@@ -7,7 +7,6 @@
 package jfsnotify
 
 import (
-	"context"
 	"github.com/e7coding/coding-common/container/jlist"
 	"github.com/e7coding/coding-common/errs/jerr"
 
@@ -66,7 +65,7 @@ func (w *Watcher) AddOnce(
 							subPath, watchAddErr.Error(),
 						)
 					} else {
-						intlog.Printf(context.TODO(), "watcher adds monitor for: %s", subPath)
+						intlog.Printf("watcher adds monitor for: %s", subPath)
 					}
 				}
 			}
@@ -121,7 +120,7 @@ func (w *Watcher) addWithCallbackFunc(
 	if err = w.watcher.Add(path); err != nil {
 		err = jerr.WithMsgErrF(err, `add watch failed for path "%s"`, path)
 	} else {
-		intlog.Printf(context.TODO(), "watcher adds monitor for: %s", path)
+		intlog.Printf("watcher adds monitor for: %s", path)
 	}
 	// Add the callback to global callback map.
 	callbackIdMap.Put(callback.Id, callback)
@@ -132,7 +131,7 @@ func (w *Watcher) addWithCallbackFunc(
 func (w *Watcher) Close() {
 	close(w.closeChan)
 	if err := w.watcher.Close(); err != nil {
-		intlog.Errorf(context.TODO(), `%+v`, err)
+		intlog.Errorf(`%+v`, err)
 	}
 	w.events.Close()
 }

@@ -9,7 +9,6 @@ package jcompress
 import (
 	"archive/zip"
 	"bytes"
-	"context"
 	"github.com/e7coding/coding-common/errs/jerr"
 	"io"
 	"os"
@@ -109,7 +108,7 @@ func doZipPathWriter(fileOrFolderPath, exclude string, zw *zip.Writer, prefix ..
 
 	for _, file := range files {
 		if exclude == file {
-			intlog.Printf(context.TODO(), `跳过文件: %s`, file)
+			intlog.Printf(`跳过文件: %s`, file)
 			continue
 		}
 		relDir := jfile.Dir(file[len(fileOrFolderPath):])

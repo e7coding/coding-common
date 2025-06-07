@@ -7,7 +7,6 @@
 package jsession
 
 import (
-	"context"
 	"time"
 
 	"github.com/e7coding/coding-common/container/jmap"
@@ -17,31 +16,31 @@ import (
 type Storage interface {
 	// New creates a custom session id.
 	// This function can be used for custom session creation.
-	New(ctx context.Context, ttl time.Duration) (sessionId string, err error)
+	New(ttl time.Duration) (sessionId string, err error)
 
 	// Get retrieves and returns certain session value with given key.
 	// It returns nil if the key does not exist in the session.
-	Get(ctx context.Context, sessionId string, key string) (value interface{}, err error)
+	Get(sessionId string, key string) (value interface{}, err error)
 
 	// GetSize retrieves and returns the size of key-value pairs from storage.
-	GetSize(ctx context.Context, sessionId string) (size int, err error)
+	GetSize(sessionId string) (size int, err error)
 
 	// Data retrieves all key-value pairs as map from storage.
-	Data(ctx context.Context, sessionId string) (sessionData map[string]interface{}, err error)
+	Data(sessionId string) (sessionData map[string]interface{}, err error)
 
 	// Set sets one key-value session pair to the storage.
 	// The parameter `ttl` specifies the TTL for the session id.
-	Set(ctx context.Context, sessionId string, key string, value interface{}, ttl time.Duration) error
+	Set(sessionId string, key string, value interface{}, ttl time.Duration) error
 
 	// SetMap batch sets key-value session pairs as map to the storage.
 	// The parameter `ttl` specifies the TTL for the session id.
-	SetMap(ctx context.Context, sessionId string, mapData map[string]interface{}, ttl time.Duration) error
+	SetMap(sessionId string, mapData map[string]interface{}, ttl time.Duration) error
 
 	// Remove deletes key-value pair from specified session from storage.
-	Remove(ctx context.Context, sessionId string, key string) error
+	Remove(sessionId string, key string) error
 
 	// RemoveAll deletes session from storage.
-	RemoveAll(ctx context.Context, sessionId string) error
+	RemoveAll(sessionId string) error
 
 	// GetSession returns the session data as `*gmap.StrAnyMap` for given session from storage.
 	//
@@ -51,14 +50,14 @@ type Storage interface {
 	//
 	// This function is called ever when session starts.
 	// It returns nil if the session does not exist or its TTL is expired.
-	GetSession(ctx context.Context, sessionId string, ttl time.Duration) (*jmap.StrAnyMap, error)
+	GetSession(sessionId string, ttl time.Duration) (*jmap.StrAnyMap, error)
 
 	// SetSession updates the data for specified session id.
 	// This function is called ever after session, which is changed dirty, is closed.
 	// This copy all session data map from memory to storage.
-	SetSession(ctx context.Context, sessionId string, sessionData *jmap.StrAnyMap, ttl time.Duration) error
+	SetSession(sessionId string, sessionData *jmap.StrAnyMap, ttl time.Duration) error
 
 	// UpdateTTL updates the TTL for specified session id.
 	// This function is called ever after session, which is not dirty, is closed.
-	UpdateTTL(ctx context.Context, sessionId string, ttl time.Duration) error
+	UpdateTTL(sessionId string, ttl time.Duration) error
 }

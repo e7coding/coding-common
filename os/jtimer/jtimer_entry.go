@@ -7,7 +7,6 @@
 package jtimer
 
 import (
-	"context"
 	"github.com/e7coding/coding-common/errs/jerr"
 
 	"github.com/e7coding/coding-common/container/jatomic"
@@ -15,19 +14,18 @@ import (
 
 // Entry is the timing job.
 type Entry struct {
-	job         JobFunc         // The job function.
-	ctx         context.Context // The context for the job, for READ ONLY.
-	timer       *Timer          // Belonged timer.
-	ticks       int64           // The job runs every tick.
-	times       *jatomic.Int    // Limit running times.
-	status      *jatomic.Int    // Job status.
-	isSingleton *jatomic.Bool   // Singleton mode.
-	nextTicks   *jatomic.Int64  // Next run ticks of the job.
-	infinite    *jatomic.Bool   // No times limit.
+	job         JobFunc        // The job function.
+	timer       *Timer         // Belonged timer.
+	ticks       int64          // The job runs every tick.
+	times       *jatomic.Int   // Limit running times.
+	status      *jatomic.Int   // Job status.
+	isSingleton *jatomic.Bool  // Singleton mode.
+	nextTicks   *jatomic.Int64 // Next run ticks of the job.
+	infinite    *jatomic.Bool  // No times limit.
 }
 
 // JobFunc is the timing called job function in timer.
-type JobFunc = func(ctx context.Context)
+type JobFunc = func()
 
 // Status returns the status of the job.
 func (entry *Entry) Status() int {
@@ -66,7 +64,7 @@ func (entry *Entry) callJobFunc() {
 			entry.SetStatus(StatusReady)
 		}
 	}()
-	entry.job(entry.ctx)
+	entry.job()
 }
 
 // doCheckAndRunByTicks checks the if job can run in given timer ticks,
@@ -135,11 +133,6 @@ func (entry *Entry) SetSingleton(enabled bool) {
 // Job returns the job function of this job.
 func (entry *Entry) Job() JobFunc {
 	return entry.job
-}
-
-// Ctx returns the initialized context of this job.
-func (entry *Entry) Ctx() context.Context {
-	return entry.ctx
 }
 
 // SetTimes sets the limit running times for the job.

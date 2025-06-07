@@ -39,18 +39,17 @@ func (w *Watcher) watchLoop() {
 				return struct{}{}, nil
 			}
 			_, err := w.cache.SetIfNotExist(
-				context.Background(),
 				ev.String(),
 				cacheFunc,
 				repeatEventFilterDuration,
 			)
 			if err != nil {
-				intlog.Errorf(context.TODO(), `%+v`, err)
+				intlog.Errorf(`%+v`, err)
 			}
 
 		// error occurs in underlying watcher.
 		case err := <-w.watcher.Errors:
-			intlog.Errorf(context.TODO(), `%+v`, err)
+			intlog.Errorf(`%+v`, err)
 		}
 	}
 }
@@ -59,7 +58,6 @@ func (w *Watcher) watchLoop() {
 func (w *Watcher) eventLoop() {
 	var (
 		err error
-		ctx = context.TODO()
 	)
 	for {
 		if v := w.events.Pop(); v != nil {
@@ -83,10 +81,9 @@ func (w *Watcher) eventLoop() {
 					// It here adds the path back to monitor.
 					// We need no worry about the repeat adding.
 					if err = w.watcher.Add(event.Path); err != nil {
-						intlog.Errorf(ctx, `%+v`, err)
+						intlog.Errorf(`%+v`, err)
 					} else {
 						intlog.Printf(
-							ctx,
 							"fake remove event, watcher re-adds monitor for: %s",
 							event.Path,
 						)
@@ -106,10 +103,9 @@ func (w *Watcher) eventLoop() {
 					// It might lose the monitoring for the path, so we add the path back to monitor.
 					// We need no worry about the repeat adding.
 					if err = w.watcher.Add(event.Path); err != nil {
-						intlog.Errorf(ctx, `%+v`, err)
+						intlog.Errorf(`%+v`, err)
 					} else {
 						intlog.Printf(
-							ctx,
 							"fake rename event, watcher re-adds monitor for: %s",
 							event.Path,
 						)
@@ -128,10 +124,9 @@ func (w *Watcher) eventLoop() {
 					for _, subPath := range fileAllDirs(event.Path) {
 						if fileIsDir(subPath) {
 							if err = w.watcher.Add(subPath); err != nil {
-								intlog.Errorf(ctx, `%+v`, err)
+								intlog.Errorf(`%+v`, err)
 							} else {
 								intlog.Printf(
-									ctx,
 									"folder creation event, watcher adds monitor for: %s",
 									subPath,
 								)

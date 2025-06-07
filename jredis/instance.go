@@ -7,7 +7,6 @@
 package jredis
 
 import (
-	"context"
 	"github.com/e7coding/coding-common/container/jmap"
 
 	"github.com/e7coding/coding-common/internal/intlog"
@@ -30,7 +29,7 @@ func Instance(name ...string) *Redis {
 		if config, ok := GetConfig(group); ok {
 			r, err := New(config)
 			if err != nil {
-				intlog.Errorf(context.TODO(), `%+v`, err)
+				intlog.Errorf(`%+v`, err)
 				return nil
 			}
 			return r

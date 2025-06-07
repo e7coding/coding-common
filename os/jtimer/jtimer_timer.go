@@ -7,7 +7,6 @@
 package jtimer
 
 import (
-	"context"
 	"time"
 
 	"github.com/e7coding/coding-common/container/jatomic"
@@ -33,9 +32,8 @@ func New(options ...TimerOptions) *Timer {
 }
 
 // Add adds a timing job to the timer, which runs in interval of `interval`.
-func (t *Timer) Add(ctx context.Context, interval time.Duration, job JobFunc) *Entry {
+func (t *Timer) Add(interval time.Duration, job JobFunc) *Entry {
 	return t.createEntry(createEntryInput{
-		Ctx:         ctx,
 		Interval:    interval,
 		Job:         job,
 		IsSingleton: false,
@@ -55,9 +53,8 @@ func (t *Timer) Add(ctx context.Context, interval time.Duration, job JobFunc) *E
 // exits if its run times exceeds the `times`.
 //
 // The parameter `status` specifies the job status when it's firstly added to the timer.
-func (t *Timer) AddEntry(ctx context.Context, interval time.Duration, job JobFunc, isSingleton bool, times int, status int) *Entry {
+func (t *Timer) AddEntry(interval time.Duration, job JobFunc, isSingleton bool, times int, status int) *Entry {
 	return t.createEntry(createEntryInput{
-		Ctx:         ctx,
 		Interval:    interval,
 		Job:         job,
 		IsSingleton: isSingleton,
@@ -67,9 +64,8 @@ func (t *Timer) AddEntry(ctx context.Context, interval time.Duration, job JobFun
 }
 
 // AddSingleton is a convenience function for add singleton mode job.
-func (t *Timer) AddSingleton(ctx context.Context, interval time.Duration, job JobFunc) *Entry {
+func (t *Timer) AddSingleton(interval time.Duration, job JobFunc) *Entry {
 	return t.createEntry(createEntryInput{
-		Ctx:         ctx,
 		Interval:    interval,
 		Job:         job,
 		IsSingleton: true,
@@ -79,9 +75,8 @@ func (t *Timer) AddSingleton(ctx context.Context, interval time.Duration, job Jo
 }
 
 // AddOnce is a convenience function for adding a job which only runs once and then exits.
-func (t *Timer) AddOnce(ctx context.Context, interval time.Duration, job JobFunc) *Entry {
+func (t *Timer) AddOnce(interval time.Duration, job JobFunc) *Entry {
 	return t.createEntry(createEntryInput{
-		Ctx:         ctx,
 		Interval:    interval,
 		Job:         job,
 		IsSingleton: true,
@@ -91,9 +86,8 @@ func (t *Timer) AddOnce(ctx context.Context, interval time.Duration, job JobFunc
 }
 
 // AddTimes is a convenience function for adding a job which is limited running times.
-func (t *Timer) AddTimes(ctx context.Context, interval time.Duration, times int, job JobFunc) *Entry {
+func (t *Timer) AddTimes(interval time.Duration, times int, job JobFunc) *Entry {
 	return t.createEntry(createEntryInput{
-		Ctx:         ctx,
 		Interval:    interval,
 		Job:         job,
 		IsSingleton: true,
@@ -104,41 +98,41 @@ func (t *Timer) AddTimes(ctx context.Context, interval time.Duration, times int,
 
 // DelayAdd adds a timing job after delay of `delay` duration.
 // Also see Add.
-func (t *Timer) DelayAdd(ctx context.Context, delay time.Duration, interval time.Duration, job JobFunc) {
-	t.AddOnce(ctx, delay, func(ctx context.Context) {
-		t.Add(ctx, interval, job)
+func (t *Timer) DelayAdd(delay time.Duration, interval time.Duration, job JobFunc) {
+	t.AddOnce(delay, func() {
+		t.Add(interval, job)
 	})
 }
 
 // DelayAddEntry adds a timing job after delay of `delay` duration.
 // Also see AddEntry.
-func (t *Timer) DelayAddEntry(ctx context.Context, delay time.Duration, interval time.Duration, job JobFunc, isSingleton bool, times int, status int) {
-	t.AddOnce(ctx, delay, func(ctx context.Context) {
-		t.AddEntry(ctx, interval, job, isSingleton, times, status)
+func (t *Timer) DelayAddEntry(delay time.Duration, interval time.Duration, job JobFunc, isSingleton bool, times int, status int) {
+	t.AddOnce(delay, func() {
+		t.AddEntry(interval, job, isSingleton, times, status)
 	})
 }
 
 // DelayAddSingleton adds a timing job after delay of `delay` duration.
 // Also see AddSingleton.
-func (t *Timer) DelayAddSingleton(ctx context.Context, delay time.Duration, interval time.Duration, job JobFunc) {
-	t.AddOnce(ctx, delay, func(ctx context.Context) {
-		t.AddSingleton(ctx, interval, job)
+func (t *Timer) DelayAddSingleton(delay time.Duration, interval time.Duration, job JobFunc) {
+	t.AddOnce(delay, func() {
+		t.AddSingleton(interval, job)
 	})
 }
 
 // DelayAddOnce adds a timing job after delay of `delay` duration.
 // Also see AddOnce.
-func (t *Timer) DelayAddOnce(ctx context.Context, delay time.Duration, interval time.Duration, job JobFunc) {
-	t.AddOnce(ctx, delay, func(ctx context.Context) {
-		t.AddOnce(ctx, interval, job)
+func (t *Timer) DelayAddOnce(delay time.Duration, interval time.Duration, job JobFunc) {
+	t.AddOnce(delay, func() {
+		t.AddOnce(interval, job)
 	})
 }
 
 // DelayAddTimes adds a timing job after delay of `delay` duration.
 // Also see AddTimes.
-func (t *Timer) DelayAddTimes(ctx context.Context, delay time.Duration, interval time.Duration, times int, job JobFunc) {
-	t.AddOnce(ctx, delay, func(ctx context.Context) {
-		t.AddTimes(ctx, interval, times, job)
+func (t *Timer) DelayAddTimes(delay time.Duration, interval time.Duration, times int, job JobFunc) {
+	t.AddOnce(delay, func() {
+		t.AddTimes(interval, times, job)
 	})
 }
 
@@ -158,7 +152,6 @@ func (t *Timer) Close() {
 }
 
 type createEntryInput struct {
-	Ctx         context.Context
 	Interval    time.Duration
 	Job         JobFunc
 	IsSingleton bool
@@ -193,7 +186,6 @@ func (t *Timer) createEntry(in createEntryInput) *Entry {
 	var (
 		entry = &Entry{
 			job:         in.Job,
-			ctx:         in.Ctx,
 			timer:       t,
 			ticks:       intervalTicksOfJob,
 			times:       jatomic.NewInt(in.Times),

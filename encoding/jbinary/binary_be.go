@@ -8,7 +8,6 @@ package jbinary
 
 import (
 	"bytes"
-	"context"
 	"encoding/binary"
 	"fmt"
 	"github.com/e7coding/coding-common/errs/jerr"
@@ -58,7 +57,7 @@ func BeEncode(values ...interface{}) []byte {
 		default:
 			// 其他类型通过 fmt.Sprintf 转为字符串后编码
 			if err := binary.Write(buf, binary.BigEndian, value); err != nil {
-				intlog.Errorf(context.TODO(), "%+v", err)
+				intlog.Errorf("%+v", err)
 				buf.Write(BeEncodeString(fmt.Sprintf("%v", value)))
 			}
 		}

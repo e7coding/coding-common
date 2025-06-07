@@ -89,7 +89,7 @@ func listen() {
 	)
 	for {
 		sig = <-signalChan
-		intlog.Printf(ctx, `signal received: %s`, sig.String())
+		intlog.Printf(`signal received: %s`, sig.String())
 		if handlers := getHandlersBySignal(sig); len(handlers) > 0 {
 			for _, handler := range handlers {
 				wg.Add(1)
@@ -97,24 +97,23 @@ func listen() {
 					currentHandler = handler
 					currentSig     = sig
 				)
-				jutil.TryCatch(ctx, func(ctx context.Context) {
+				jutil.TryCatch(func() {
 					defer wg.Done()
 					currentHandler(currentSig)
-				}, func(ctx context.Context, exception error) {
-					intlog.Errorf(ctx, `execute signal handler failed: %+v`, exception)
+				}, func(exception error) {
+					intlog.Errorf(`execute signal handler failed: %+v`, exception)
 				})
 			}
 		}
 		// If it is shutdown signal, it exits this signal listening.
 		if _, ok := shutdownSignalMap[sig]; ok {
 			intlog.Printf(
-				ctx,
 				`receive shutdown signal "%s", waiting all signal handler done`,
 				sig.String(),
 			)
 			// Wait until signal handlers done.
 			wg.Wait()
-			intlog.Print(ctx, `all signal handler done, exit process`)
+			intlog.Print(`all signal handler done, exit process`)
 			return
 		}
 	}

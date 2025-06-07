@@ -8,7 +8,6 @@ package jbinary
 
 import (
 	"bytes"
-	"context"
 	"encoding/binary"
 	"fmt"
 	"github.com/e7coding/coding-common/errs/jerr"
@@ -60,7 +59,7 @@ func LeEncode(values ...interface{}) []byte {
 		default:
 			// 尝试使用 binary.Write 编码，失败时记录日志并写入字符串表示
 			if err := binary.Write(buf, binary.LittleEndian, value); err != nil {
-				intlog.Errorf(context.TODO(), "%+v", err)
+				intlog.Errorf("%+v", err)
 				buf.Write(LeEncodeString(fmt.Sprintf("%v", value)))
 			}
 		}

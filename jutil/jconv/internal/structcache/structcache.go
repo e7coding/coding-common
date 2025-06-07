@@ -8,7 +8,6 @@
 package structcache
 
 import (
-	"context"
 	"reflect"
 	"runtime"
 	"sync"
@@ -76,7 +75,6 @@ func (cf *Converter) RegisterAnyConvertFunc(dstType reflect.Type, convertFunc An
 	}
 	cf.anyToTypeConvertMap[dstType] = convertFunc
 	intlog.Printf(
-		context.Background(),
 		`RegisterAnyConvertFunc: %s -> %s`,
 		dstType.String(), runtime.FuncForPC(reflect.ValueOf(convertFunc).Pointer()).Name(),
 	)

@@ -13,8 +13,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/e7coding/coding-common/os/jfsnotify"
 	"github.com/e7coding/coding-common/os/jfile"
+	"github.com/e7coding/coding-common/os/jfsnotify"
 	"github.com/e7coding/coding-common/text/jstr"
 )
 

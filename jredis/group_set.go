@@ -7,34 +7,30 @@
 package jredis
 
 import (
-	"context"
-
 	"github.com/e7coding/coding-common/container/jvar"
 )
 
 // SetWriter 只包含对 Redis Set 的写入/修改操作
 type SetWriter interface {
-	SAdd(ctx context.Context, key string, member interface{}, members ...interface{}) (int64, error)
-	SRem(ctx context.Context, key string, member interface{}, members ...interface{}) (int64, error)
-	SMove(ctx context.Context, source, destination string, member interface{}) (int64, error)
-	SPop(ctx context.Context, key string, count ...int) (*jvar.Var, error)
-	SRandMember(ctx context.Context, key string, count ...int) (*jvar.Var, error)
-	SInterStore(ctx context.Context, destination string, key string, keys ...string) (int64, error)
-	SUnionStore(ctx context.Context, destination, key string, keys ...string) (int64, error)
-	SDiffStore(ctx context.Context, destination string, key string, keys ...string) (int64, error)
+	SAdd(key string, member interface{}, members ...interface{}) (int64, error)
+	SRem(key string, member interface{}, members ...interface{}) (int64, error)
+	SMove(source, destination string, member interface{}) (int64, error)
+	SPop(key string, count ...int) (*jvar.Var, error)
+	SRandMember(key string, count ...int) (*jvar.Var, error)
+	SInterStore(destination string, key string, keys ...string) (int64, error)
+	SUnionStore(destination, key string, keys ...string) (int64, error)
+	SDiffStore(destination string, key string, keys ...string) (int64, error)
 }
 
 // SetReader 只包含对 Redis Set 的查询/只读操作
 type SetReader interface {
-	SIsMember(ctx context.Context, key string, member interface{}) (int64, error)
-	SCard(ctx context.Context, key string) (int64, error)
-	SMembers(ctx context.Context, key string) (
-
-		jvar.Vars, error)
-	SMIsMember(ctx context.Context, key string, member interface{}, members ...interface{}) ([]int, error)
-	SInter(ctx context.Context, key string, keys ...string) (jvar.Vars, error)
-	SUnion(ctx context.Context, key string, keys ...string) (jvar.Vars, error)
-	SDiff(ctx context.Context, key string, keys ...string) (jvar.Vars, error)
+	SIsMember(key string, member interface{}) (int64, error)
+	SCard(key string) (int64, error)
+	SMembers(key string) (jvar.Vars, error)
+	SMIsMember(key string, member interface{}, members ...interface{}) ([]int, error)
+	SInter(key string, keys ...string) (jvar.Vars, error)
+	SUnion(key string, keys ...string) (jvar.Vars, error)
+	SDiff(key string, keys ...string) (jvar.Vars, error)
 }
 
 // IGroupSet 聚合了读写接口，保持向后兼容

@@ -7,33 +7,31 @@
 package jredis
 
 import (
-	"context"
-
 	"github.com/e7coding/coding-common/container/jvar"
 )
 
 // SortedSetWriter 只包含对有序集合的写入/修改操作
 type SortedSetWriter interface {
-	ZAdd(ctx context.Context, key string, option *ZAddOption, member ZAddMember, members ...ZAddMember) (*jvar.Var, error)
-	ZIncrBy(ctx context.Context, key string, increment float64, member interface{}) (float64, error)
-	ZRem(ctx context.Context, key string, member interface{}, members ...interface{}) (int64, error)
-	ZRemRangeByRank(ctx context.Context, key string, start, stop int64) (int64, error)
-	ZRemRangeByScore(ctx context.Context, key string, min, max string) (int64, error)
-	ZRemRangeByLex(ctx context.Context, key string, min, max string) (int64, error)
+	ZAdd(key string, option *ZAddOption, member ZAddMember, members ...ZAddMember) (*jvar.Var, error)
+	ZIncrBy(key string, increment float64, member interface{}) (float64, error)
+	ZRem(key string, member interface{}, members ...interface{}) (int64, error)
+	ZRemRangeByRank(key string, start, stop int64) (int64, error)
+	ZRemRangeByScore(key string, min, max string) (int64, error)
+	ZRemRangeByLex(key string, min, max string) (int64, error)
 }
 
 // SortedSetReader 只包含对有序集合的只读/查询操作
 type SortedSetReader interface {
-	ZScore(ctx context.Context, key string, member interface{}) (float64, error)
-	ZCard(ctx context.Context, key string) (int64, error)
-	ZCount(ctx context.Context, key string, min, max string) (int64, error)
-	ZRange(ctx context.Context, key string, start, stop int64, option ...ZRangeOption) (
+	ZScore(key string, member interface{}) (float64, error)
+	ZCard(key string) (int64, error)
+	ZCount(key string, min, max string) (int64, error)
+	ZRange(key string, start, stop int64, option ...ZRangeOption) (
 
 		jvar.Vars, error)
-	ZRevRange(ctx context.Context, key string, start, stop int64, option ...ZRevRangeOption) (*jvar.Var, error)
-	ZRank(ctx context.Context, key string, member interface{}) (int64, error)
-	ZRevRank(ctx context.Context, key string, member interface{}) (int64, error)
-	ZLexCount(ctx context.Context, key, min, max string) (int64, error)
+	ZRevRange(key string, start, stop int64, option ...ZRevRangeOption) (*jvar.Var, error)
+	ZRank(key string, member interface{}) (int64, error)
+	ZRevRank(key string, member interface{}) (int64, error)
+	ZLexCount(key, min, max string) (int64, error)
 }
 
 // IGroupSortedSet 聚合了读写接口，向后兼容

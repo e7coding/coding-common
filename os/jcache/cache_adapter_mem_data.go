@@ -7,7 +7,6 @@
 package jcache
 
 import (
-	"context"
 	"sync"
 	"time"
 
@@ -181,7 +180,7 @@ func (d *memoryData) SetMap(data map[interface{}]interface{}, expireTime int64) 
 	return nil
 }
 
-func (d *memoryData) SetWithLock(ctx context.Context, key interface{}, value interface{}, expireTimestamp int64) (interface{}, error) {
+func (d *memoryData) SetWithLock(key interface{}, value interface{}, expireTimestamp int64) (interface{}, error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	var (
@@ -193,10 +192,10 @@ func (d *memoryData) SetWithLock(ctx context.Context, key interface{}, value int
 	f, ok := value.(Func)
 	if !ok {
 		// Compatible with raw function value.
-		f, ok = value.(func(ctx context.Context) (value interface{}, err error))
+		f, ok = value.(func() (value interface{}, err error))
 	}
 	if ok {
-		if value, err = f(ctx); err != nil {
+		if value, err = f(); err != nil {
 			return nil, err
 		}
 		if value == nil {

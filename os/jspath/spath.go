@@ -12,7 +12,6 @@
 package jspath
 
 import (
-	"context"
 	"github.com/e7coding/coding-common/container/jarr"
 	"github.com/e7coding/coding-common/container/jmap"
 	"github.com/e7coding/coding-common/errs/jerr"
@@ -113,7 +112,7 @@ func (sp *SPath) Set(path string) (realPath string, err error) {
 				sp.removeMonitorByPath(v)
 			}
 		}
-		intlog.Print(context.TODO(), "paths clear:", sp.paths)
+		intlog.Print("paths clear:", sp.paths)
 		sp.paths.Clear()
 		if sp.cache != nil {
 			sp.cache.Clear()

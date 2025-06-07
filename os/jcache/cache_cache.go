@@ -7,8 +7,6 @@
 package jcache
 
 import (
-	"context"
-
 	"github.com/e7coding/coding-common/jutil/jconv"
 )
 
@@ -55,14 +53,14 @@ func (c *Cache) GetAdapter() Adapter {
 }
 
 // Removes deletes `keys` in the cache.
-func (c *Cache) Removes(ctx context.Context, keys []interface{}) error {
-	_, err := c.Remove(ctx, keys...)
+func (c *Cache) Removes(keys []interface{}) error {
+	_, err := c.Remove(keys...)
 	return err
 }
 
 // KeyStrings returns all keys in the cache as string slice.
-func (c *Cache) KeyStrings(ctx context.Context) ([]string, error) {
-	keys, err := c.Keys(ctx)
+func (c *Cache) KeyStrings() ([]string, error) {
+	keys, err := c.Keys()
 	if err != nil {
 		return nil, err
 	}

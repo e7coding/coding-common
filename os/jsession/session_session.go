@@ -7,7 +7,6 @@
 package jsession
 
 import (
-	"context"
 	"errors"
 	"github.com/e7coding/coding-common/errs/jerr"
 	"time"
@@ -23,7 +22,6 @@ import (
 // for functionality implements.
 type Session struct {
 	id      string          // Session id. It retrieves the session if id is custom specified.
-	ctx     context.Context // Context for current session. Please note that, session lives along with context.
 	data    *jmap.StrAnyMap // Current Session data, which is retrieved from Storage.
 	dirty   bool            // Used to mark session is modified.
 	start   bool            // Used to mark session is started.
@@ -45,9 +43,9 @@ func (s *Session) init() error {
 	if s.id != "" {
 		// Retrieve stored session data from storage.
 		if s.manager.storage != nil {
-			s.data, err = s.manager.storage.GetSession(s.ctx, s.id, s.manager.GetTTL())
+			s.data, err = s.manager.storage.GetSession(s.id, s.manager.GetTTL())
 			if err != nil {
-				intlog.Errorf(s.ctx, `session restoring failed for id "%s": %+v`, s.id, err)
+				intlog.Errorf(`session restoring failed for id "%s": %+v`, s.id, err)
 				return err
 			}
 		}
@@ -59,9 +57,9 @@ func (s *Session) init() error {
 			s.id = s.idFunc(s.manager.ttl)
 		} else {
 			// Use default session id creating function of storage.
-			s.id, err = s.manager.storage.New(s.ctx, s.manager.ttl)
+			s.id, err = s.manager.storage.New(s.manager.ttl)
 			if err != nil && !errors.Is(err, ErrorDisabled) {
-				intlog.Errorf(s.ctx, "create session id failed: %+v", err)
+				intlog.Errorf("create session id failed: %+v", err)
 				return err
 			}
 			// If session storage does not implements id generating functionality,
@@ -89,12 +87,12 @@ func (s *Session) Close() error {
 	if s.start && s.id != "" {
 		size := s.data.Len()
 		if s.dirty {
-			err := s.manager.storage.SetSession(s.ctx, s.id, s.data, s.manager.ttl)
+			err := s.manager.storage.SetSession(s.id, s.data, s.manager.ttl)
 			if err != nil {
 				return err
 			}
 		} else if size > 0 {
-			err := s.manager.storage.UpdateTTL(s.ctx, s.id, s.manager.ttl)
+			err := s.manager.storage.UpdateTTL(s.id, s.manager.ttl)
 			if err != nil && !errors.Is(err, ErrorDisabled) {
 				return err
 			}
@@ -108,7 +106,7 @@ func (s *Session) Set(key string, value interface{}) (err error) {
 	if err = s.init(); err != nil {
 		return err
 	}
-	if err = s.manager.storage.Set(s.ctx, s.id, key, value, s.manager.ttl); err != nil {
+	if err = s.manager.storage.Set(s.id, key, value, s.manager.ttl); err != nil {
 		if !errors.Is(err, ErrorDisabled) {
 			return err
 		}
@@ -123,7 +121,7 @@ func (s *Session) SetMap(data map[string]interface{}) (err error) {
 	if err = s.init(); err != nil {
 		return err
 	}
-	if err = s.manager.storage.SetMap(s.ctx, s.id, data, s.manager.ttl); err != nil {
+	if err = s.manager.storage.SetMap(s.id, data, s.manager.ttl); err != nil {
 		s.data.PutAll(data)
 	}
 	s.dirty = true
@@ -139,7 +137,7 @@ func (s *Session) Remove(keys ...string) (err error) {
 		return err
 	}
 	for _, key := range keys {
-		if err = s.manager.storage.Remove(s.ctx, s.id, key); err != nil {
+		if err = s.manager.storage.Remove(s.id, key); err != nil {
 			s.data.Del(key)
 		}
 	}
@@ -155,7 +153,7 @@ func (s *Session) RemoveAll() (err error) {
 	if err = s.init(); err != nil {
 		return err
 	}
-	if err = s.manager.storage.RemoveAll(s.ctx, s.id); err != nil {
+	if err = s.manager.storage.RemoveAll(s.id); err != nil {
 		if !errors.Is(err, ErrorDisabled) {
 			return err
 		}
@@ -206,9 +204,9 @@ func (s *Session) Data() (sessionData map[string]interface{}, err error) {
 	if err = s.init(); err != nil {
 		return nil, err
 	}
-	sessionData, err = s.manager.storage.Data(s.ctx, s.id)
+	sessionData, err = s.manager.storage.Data(s.id)
 	if err != nil && !errors.Is(err, ErrorDisabled) {
-		intlog.Errorf(s.ctx, `%+v`, err)
+		intlog.Errorf(`%+v`, err)
 	}
 	if sessionData != nil {
 		return sessionData, nil
@@ -224,9 +222,9 @@ func (s *Session) Size() (size int, err error) {
 	if err = s.init(); err != nil {
 		return 0, err
 	}
-	size, err = s.manager.storage.GetSize(s.ctx, s.id)
+	size, err = s.manager.storage.GetSize(s.id)
 	if err != nil && !errors.Is(err, ErrorDisabled) {
-		intlog.Errorf(s.ctx, `%+v`, err)
+		intlog.Errorf(`%+v`, err)
 	}
 	if size > 0 {
 		return size, nil
@@ -264,9 +262,9 @@ func (s *Session) Get(key string, def ...interface{}) (value *jvar.Var, err erro
 	if err = s.init(); err != nil {
 		return nil, err
 	}
-	v, err := s.manager.storage.Get(s.ctx, s.id, key)
+	v, err := s.manager.storage.Get(s.id, key)
 	if err != nil && !errors.Is(err, ErrorDisabled) {
-		intlog.Errorf(s.ctx, `%+v`, err)
+		intlog.Errorf(`%+v`, err)
 		return nil, err
 	}
 	if v != nil {
@@ -297,7 +295,7 @@ func (s *Session) RegenerateId(deleteOld bool) (newId string, err error) {
 	if s.idFunc != nil {
 		newId = s.idFunc(s.manager.ttl)
 	} else {
-		newId, err = s.manager.storage.New(s.ctx, s.manager.ttl)
+		newId, err = s.manager.storage.New(s.manager.ttl)
 		if err != nil && !errors.Is(err, ErrorDisabled) {
 			return "", err
 		}
@@ -308,14 +306,14 @@ func (s *Session) RegenerateId(deleteOld bool) (newId string, err error) {
 
 	// If using storage, need to copy data to new id
 	if s.manager.storage != nil {
-		if err = s.manager.storage.SetSession(s.ctx, newId, s.data, s.manager.ttl); err != nil {
+		if err = s.manager.storage.SetSession(newId, s.data, s.manager.ttl); err != nil {
 			if !errors.Is(err, ErrorDisabled) {
 				return "", err
 			}
 		}
 		// Delete old session data if requested
 		if deleteOld {
-			if err = s.manager.storage.RemoveAll(s.ctx, s.id); err != nil {
+			if err = s.manager.storage.RemoveAll(s.id); err != nil {
 				if !errors.Is(err, ErrorDisabled) {
 					return "", err
 				}

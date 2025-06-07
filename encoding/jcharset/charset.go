@@ -22,7 +22,6 @@ package jcharset
 
 import (
 	"bytes"
-	"context"
 	"github.com/e7coding/coding-common/errs/jerr"
 	"io"
 
@@ -107,7 +106,7 @@ func getEncoding(charset string) encoding.Encoding {
 	}
 	enc, err := ianaindex.MIB.Encoding(charset)
 	if err != nil {
-		intlog.Errorf(context.TODO(), `%+v`, err)
+		intlog.Errorf(`%+v`, err)
 	}
 	return enc
 }

@@ -162,12 +162,12 @@ func (p *Process) Kill() (err error) {
 	}
 	if runtime.GOOS != "windows" {
 		if err = p.Process.Release(); err != nil {
-			intlog.Errorf(context.TODO(), `%+v`, err)
+			intlog.Errorf(`%+v`, err)
 		}
 	}
 	// It ignores this error, just log it.
 	_, err = p.Process.Wait()
-	intlog.Errorf(context.TODO(), `%+v`, err)
+	intlog.Errorf(`%+v`, err)
 	return nil
 }
 

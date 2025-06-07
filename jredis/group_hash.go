@@ -7,31 +7,29 @@
 package jredis
 
 import (
-	"context"
-
 	"github.com/e7coding/coding-common/container/jvar"
 )
 
 // HashReader 只读：获取、枚举、查询长度、判断字段存在等
 type HashReader interface {
-	HGet(ctx context.Context, key, field string) (*jvar.Var, error)
-	HMGet(ctx context.Context, key string, fields ...string) (jvar.Vars, error)
-	HGetAll(ctx context.Context, key string) (*jvar.Var, error)
-	HKeys(ctx context.Context, key string) ([]string, error)
-	HVals(ctx context.Context, key string) (jvar.Vars, error)
-	HExists(ctx context.Context, key, field string) (int64, error)
-	HLen(ctx context.Context, key string) (int64, error)
-	HStrLen(ctx context.Context, key, field string) (int64, error)
+	HGet(key, field string) (*jvar.Var, error)
+	HMGet(key string, fields ...string) (jvar.Vars, error)
+	HGetAll(key string) (*jvar.Var, error)
+	HKeys(key string) ([]string, error)
+	HVals(key string) (jvar.Vars, error)
+	HExists(key, field string) (int64, error)
+	HLen(key string) (int64, error)
+	HStrLen(key, field string) (int64, error)
 }
 
 // HashWriter 只写：设置、删除、增量、批量写入等
 type HashWriter interface {
-	HSet(ctx context.Context, key string, fields map[string]interface{}) (int64, error)
-	HSetNX(ctx context.Context, key, field string, value interface{}) (int64, error)
-	HDel(ctx context.Context, key string, fields ...string) (int64, error)
-	HMSet(ctx context.Context, key string, fields map[string]interface{}) error
-	HIncrBy(ctx context.Context, key, field string, increment int64) (int64, error)
-	HIncrByFloat(ctx context.Context, key, field string, increment float64) (float64, error)
+	HSet(key string, fields map[string]interface{}) (int64, error)
+	HSetNX(key, field string, value interface{}) (int64, error)
+	HDel(key string, fields ...string) (int64, error)
+	HMSet(key string, fields map[string]interface{}) error
+	HIncrBy(key, field string, increment int64) (int64, error)
+	HIncrByFloat(key, field string, increment float64) (float64, error)
 }
 
 type IGroupHash interface {

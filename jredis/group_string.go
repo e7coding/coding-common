@@ -7,36 +7,34 @@
 package jredis
 
 import (
-	"context"
-
 	"github.com/e7coding/coding-common/container/jvar"
 )
 
 // StrWriter 只包含写操作
 type StrWriter interface {
-	Set(ctx context.Context, key string, value interface{}, option ...SetOption) (*jvar.Var, error)
-	SetNX(ctx context.Context, key string, value interface{}) (bool, error)
-	SetEX(ctx context.Context, key string, value interface{}, ttlInSeconds int64) error
-	GetSet(ctx context.Context, key string, value interface{}) (*jvar.Var, error)
-	Append(ctx context.Context, key string, value string) (int64, error)
-	SetRange(ctx context.Context, key string, offset int64, value string) (int64, error)
-	Incr(ctx context.Context, key string) (int64, error)
-	IncrBy(ctx context.Context, key string, increment int64) (int64, error)
-	IncrByFloat(ctx context.Context, key string, increment float64) (float64, error)
-	Decr(ctx context.Context, key string) (int64, error)
-	DecrBy(ctx context.Context, key string, decrement int64) (int64, error)
-	MSet(ctx context.Context, keyValueMap map[string]interface{}) error
-	MSetNX(ctx context.Context, keyValueMap map[string]interface{}) (bool, error)
+	Set(key string, value interface{}, option ...SetOption) (*jvar.Var, error)
+	SetNX(key string, value interface{}) (bool, error)
+	SetEX(key string, value interface{}, ttlInSeconds int64) error
+	GetSet(key string, value interface{}) (*jvar.Var, error)
+	Append(key string, value string) (int64, error)
+	SetRange(key string, offset int64, value string) (int64, error)
+	Incr(key string) (int64, error)
+	IncrBy(key string, increment int64) (int64, error)
+	IncrByFloat(key string, increment float64) (float64, error)
+	Decr(key string) (int64, error)
+	DecrBy(key string, decrement int64) (int64, error)
+	MSet(keyValueMap map[string]interface{}) error
+	MSetNX(keyValueMap map[string]interface{}) (bool, error)
 }
 
 // StrReader 只包含读操作
 type StrReader interface {
-	Get(ctx context.Context, key string) (*jvar.Var, error)
-	GetDel(ctx context.Context, key string) (*jvar.Var, error)
-	GetEX(ctx context.Context, key string, option ...GetEXOption) (*jvar.Var, error)
-	StrLen(ctx context.Context, key string) (int64, error)
-	GetRange(ctx context.Context, key string, start, end int64) (string, error)
-	MGet(ctx context.Context, keys ...string) (map[string]*jvar.Var, error)
+	Get(key string) (*jvar.Var, error)
+	GetDel(key string) (*jvar.Var, error)
+	GetEX(key string, option ...GetEXOption) (*jvar.Var, error)
+	StrLen(key string) (int64, error)
+	GetRange(key string, start, end int64) (string, error)
+	MGet(keys ...string) (map[string]*jvar.Var, error)
 }
 
 // IGroupStr 聚合读写接口，向后兼容

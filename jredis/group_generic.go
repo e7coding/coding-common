@@ -7,7 +7,6 @@
 package jredis
 
 import (
-	"context"
 	"time"
 )
 
@@ -17,47 +16,47 @@ type IGroupGeneric interface {
 	FlushOps
 	ExpireOps
 	CopyOps
-	Type(ctx context.Context, key string) (string, error)
-	Unlink(ctx context.Context, keys ...string) (int64, error)
-	DBSize(ctx context.Context) (int64, error)
+	Type(key string) (string, error)
+	Unlink(keys ...string) (int64, error)
+	DBSize() (int64, error)
 }
 
 // KeyOps 只关心 key 的基本操作
 type KeyOps interface {
-	Exists(ctx context.Context, keys ...string) (int64, error)
-	Del(ctx context.Context, keys ...string) (int64, error)
-	Rename(ctx context.Context, key, newKey string) error
-	RenameNX(ctx context.Context, key, newKey string) (int64, error)
-	Move(ctx context.Context, key string, db int) (int64, error)
-	RandomKey(ctx context.Context) (string, error)
+	Exists(keys ...string) (int64, error)
+	Del(keys ...string) (int64, error)
+	Rename(key, newKey string) error
+	RenameNX(key, newKey string) (int64, error)
+	Move(key string, db int) (int64, error)
+	RandomKey() (string, error)
 }
 
 // ScanOps 只关心遍历和扫描
 type ScanOps interface {
-	Keys(ctx context.Context, pattern string) ([]string, error)
-	Scan(ctx context.Context, cursor uint64, option ...ScanOption) (uint64, []string, error)
+	Keys(pattern string) ([]string, error)
+	Scan(cursor uint64, option ...ScanOption) (uint64, []string, error)
 }
 
 // FlushOps 只关心清库操作
 type FlushOps interface {
-	FlushDB(ctx context.Context, option ...FlushOp) error
-	FlushAll(ctx context.Context, option ...FlushOp) error
+	FlushDB(option ...FlushOp) error
+	FlushAll(option ...FlushOp) error
 }
 
 // TTL 和过期相关
 type ExpireOps interface {
-	Expire(ctx context.Context, key string, seconds int64, option ...ExpireOption) (int64, error)
-	ExpireAt(ctx context.Context, key string, when time.Time, option ...ExpireOption) (int64, error)
-	TTL(ctx context.Context, key string) (int64, error)
-	Persist(ctx context.Context, key string) (int64, error)
-	PExpire(ctx context.Context, key string, ms int64, option ...ExpireOption) (int64, error)
-	PExpireAt(ctx context.Context, key string, when time.Time, option ...ExpireOption) (int64, error)
-	PTTL(ctx context.Context, key string) (int64, error)
+	Expire(key string, seconds int64, option ...ExpireOption) (int64, error)
+	ExpireAt(key string, when time.Time, option ...ExpireOption) (int64, error)
+	TTL(key string) (int64, error)
+	Persist(key string) (int64, error)
+	PExpire(key string, ms int64, option ...ExpireOption) (int64, error)
+	PExpireAt(key string, when time.Time, option ...ExpireOption) (int64, error)
+	PTTL(key string) (int64, error)
 }
 
 // CopyOps 只关心复制命令
 type CopyOps interface {
-	Copy(ctx context.Context, source, dest string, option ...CopyOption) (int64, error)
+	Copy(source, dest string, option ...CopyOption) (int64, error)
 }
 
 // CopyOption provides options for function Copy.

@@ -7,7 +7,6 @@
 package jfile
 
 import (
-	"context"
 	"github.com/e7coding/coding-common/errs/jerr"
 	"time"
 
@@ -52,7 +51,6 @@ func GetContentsWithCache(path string, duration ...time.Duration) string {
 // The parameter `expire` specifies the caching time for this file content in seconds.
 func GetBytesWithCache(path string, duration ...time.Duration) []byte {
 	var (
-		ctx      = context.Background()
 		expire   = cacheDuration
 		cacheKey = commandEnvKeyForCache + path
 	)
@@ -60,15 +58,15 @@ func GetBytesWithCache(path string, duration ...time.Duration) []byte {
 	if len(duration) > 0 {
 		expire = duration[0]
 	}
-	r, _ := internalCache.GetOrSetFuncLock(ctx, cacheKey, func(ctx context.Context) (interface{}, error) {
+	r, _ := internalCache.GetOrSetFuncLock(cacheKey, func() (interface{}, error) {
 		b := GetBytes(path)
 		if b != nil {
 			// Adding this `path` to gfsnotify,
 			// it will clear its cache if there's any changes of the file.
 			_, _ = jfsnotify.Add(path, func(event *jfsnotify.Event) {
-				_, err := internalCache.Remove(ctx, cacheKey)
+				_, err := internalCache.Remove(cacheKey)
 				if err != nil {
-					intlog.Errorf(ctx, `%+v`, err)
+					intlog.Errorf(`%+v`, err)
 				}
 				jfsnotify.Exit()
 			})

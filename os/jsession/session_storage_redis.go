@@ -7,7 +7,6 @@
 package jsession
 
 import (
-	"context"
 	"github.com/e7coding/coding-common/jredis"
 	"time"
 
@@ -45,8 +44,8 @@ func NewStorageRedis(redis *jredis.Redis, prefix ...string) *StorageRedis {
 		s.prefix = prefix[0]
 	}
 	// Batch updates the TTL for session ids timely.
-	jtimer.AddSingleton(context.Background(), DefaultStorageRedisLoopInterval, func(ctx context.Context) {
-		intlog.Print(context.TODO(), "StorageRedis.timer start")
+	jtimer.AddSingleton(DefaultStorageRedisLoopInterval, func() {
+		intlog.Print("StorageRedis.timer start")
 		var (
 			err        error
 			sessionId  string
@@ -56,19 +55,19 @@ func NewStorageRedis(redis *jredis.Redis, prefix ...string) *StorageRedis {
 			if sessionId, ttlSeconds = s.updatingIdMap.Pop(); sessionId == "" {
 				break
 			} else {
-				if err = s.doUpdateExpireForSession(context.TODO(), sessionId, ttlSeconds); err != nil {
-					intlog.Errorf(context.TODO(), `%+v`, err)
+				if err = s.doUpdateExpireForSession(sessionId, ttlSeconds); err != nil {
+					intlog.Errorf(`%+v`, err)
 				}
 			}
 		}
-		intlog.Print(context.TODO(), "StorageRedis.timer end")
+		intlog.Print("StorageRedis.timer end")
 	})
 	return s
 }
 
 // RemoveAll deletes all key-value pairs from storage.
-func (s *StorageRedis) RemoveAll(ctx context.Context, sessionId string) error {
-	_, err := s.redis.Del(ctx, s.sessionIdToRedisKey(sessionId))
+func (s *StorageRedis) RemoveAll(sessionId string) error {
+	_, err := s.redis.Del(s.sessionIdToRedisKey(sessionId))
 	return err
 }
 
@@ -79,9 +78,9 @@ func (s *StorageRedis) RemoveAll(ctx context.Context, sessionId string) error {
 // and for some storage it might be nil if memory storage is disabled.
 //
 // This function is called ever when session starts.
-func (s *StorageRedis) GetSession(ctx context.Context, sessionId string, ttl time.Duration) (*jmap.StrAnyMap, error) {
-	intlog.Printf(ctx, "StorageRedis.GetSession: %s, %v", sessionId, ttl)
-	r, err := s.redis.Get(ctx, s.sessionIdToRedisKey(sessionId))
+func (s *StorageRedis) GetSession(sessionId string, ttl time.Duration) (*jmap.StrAnyMap, error) {
+	intlog.Printf("StorageRedis.GetSession: %s, %v", sessionId, ttl)
+	r, err := s.redis.Get(s.sessionIdToRedisKey(sessionId))
 	if err != nil {
 		return nil, err
 	}
@@ -102,21 +101,21 @@ func (s *StorageRedis) GetSession(ctx context.Context, sessionId string, ttl tim
 // SetSession updates the data map for specified session id.
 // This function is called ever after session, which is changed dirty, is closed.
 // This copy all session data map from memory to storage.
-func (s *StorageRedis) SetSession(ctx context.Context, sessionId string, sessionData *jmap.StrAnyMap, ttl time.Duration) error {
-	intlog.Printf(ctx, "StorageRedis.SetSession: %s, %v, %v", sessionId, sessionData, ttl)
+func (s *StorageRedis) SetSession(sessionId string, sessionData *jmap.StrAnyMap, ttl time.Duration) error {
+	intlog.Printf("StorageRedis.SetSession: %s, %v, %v", sessionId, sessionData, ttl)
 	content, err := json.Marshal(sessionData)
 	if err != nil {
 		return err
 	}
-	err = s.redis.SetEX(ctx, s.sessionIdToRedisKey(sessionId), content, int64(ttl.Seconds()))
+	err = s.redis.SetEX(s.sessionIdToRedisKey(sessionId), content, int64(ttl.Seconds()))
 	return err
 }
 
 // UpdateTTL updates the TTL for specified session id.
 // This function is called ever after session, which is not dirty, is closed.
 // It just adds the session id to the async handling queue.
-func (s *StorageRedis) UpdateTTL(ctx context.Context, sessionId string, ttl time.Duration) error {
-	intlog.Printf(ctx, "StorageRedis.UpdateTTL: %s, %v", sessionId, ttl)
+func (s *StorageRedis) UpdateTTL(sessionId string, ttl time.Duration) error {
+	intlog.Printf("StorageRedis.UpdateTTL: %s, %v", sessionId, ttl)
 	if ttl >= DefaultStorageRedisLoopInterval {
 		s.updatingIdMap.Put(sessionId, int(ttl.Seconds()))
 	}
@@ -124,9 +123,9 @@ func (s *StorageRedis) UpdateTTL(ctx context.Context, sessionId string, ttl time
 }
 
 // doUpdateExpireForSession updates the TTL for session id.
-func (s *StorageRedis) doUpdateExpireForSession(ctx context.Context, sessionId string, ttlSeconds int) error {
-	intlog.Printf(ctx, "StorageRedis.doUpdateTTL: %s, %d", sessionId, ttlSeconds)
-	_, err := s.redis.Expire(ctx, s.sessionIdToRedisKey(sessionId), int64(ttlSeconds))
+func (s *StorageRedis) doUpdateExpireForSession(sessionId string, ttlSeconds int) error {
+	intlog.Printf("StorageRedis.doUpdateTTL: %s, %d", sessionId, ttlSeconds)
+	_, err := s.redis.Expire(s.sessionIdToRedisKey(sessionId), int64(ttlSeconds))
 	return err
 }
 

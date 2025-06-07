@@ -70,13 +70,6 @@ func (p *Pool) Put(obj interface{}) error {
 	return nil
 }
 
-// MustPut 同 Put，但遇到错误直接 panic。
-func (p *Pool) MustPut(obj interface{}) {
-	if err := p.Put(obj); err != nil {
-		panic(err)
-	}
-}
-
 // Get 从池中取一个对象：
 //  1. 如果有未过期的，返回之；
 //  2. 否则尝试 newFunc；

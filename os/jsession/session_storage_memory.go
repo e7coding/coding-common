@@ -7,7 +7,6 @@
 package jsession
 
 import (
-	"context"
 	"time"
 
 	"github.com/e7coding/coding-common/container/jmap"
@@ -34,8 +33,8 @@ func NewStorageMemory() *StorageMemory {
 }
 
 // RemoveAll deletes session from storage.
-func (s *StorageMemory) RemoveAll(ctx context.Context, sessionId string) error {
-	_, err := s.cache.Remove(ctx, sessionId)
+func (s *StorageMemory) RemoveAll(sessionId string) error {
+	_, err := s.cache.Remove(sessionId)
 	return err
 }
 
@@ -46,13 +45,13 @@ func (s *StorageMemory) RemoveAll(ctx context.Context, sessionId string) error {
 // and for some storage it might be nil if memory storage is disabled.
 //
 // This function is called ever when session starts.
-func (s *StorageMemory) GetSession(ctx context.Context, sessionId string, ttl time.Duration) (*jmap.StrAnyMap, error) {
+func (s *StorageMemory) GetSession(sessionId string, ttl time.Duration) (*jmap.StrAnyMap, error) {
 	// Retrieve memory session data from manager.
 	var (
 		v   *jvar.Var
 		err error
 	)
-	v, err = s.cache.Get(ctx, sessionId)
+	v, err = s.cache.Get(sessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -65,14 +64,14 @@ func (s *StorageMemory) GetSession(ctx context.Context, sessionId string, ttl ti
 // SetSession updates the data map for specified session id.
 // This function is called ever after session, which is changed dirty, is closed.
 // This copy all session data map from memory to storage.
-func (s *StorageMemory) SetSession(ctx context.Context, sessionId string, sessionData *jmap.StrAnyMap, ttl time.Duration) error {
-	return s.cache.Set(ctx, sessionId, sessionData, ttl)
+func (s *StorageMemory) SetSession(sessionId string, sessionData *jmap.StrAnyMap, ttl time.Duration) error {
+	return s.cache.Set(sessionId, sessionData, ttl)
 }
 
 // UpdateTTL updates the TTL for specified session id.
 // This function is called ever after session, which is not dirty, is closed.
 // It just adds the session id to the async handling queue.
-func (s *StorageMemory) UpdateTTL(ctx context.Context, sessionId string, ttl time.Duration) error {
-	_, err := s.cache.UpdateExpire(ctx, sessionId, ttl)
+func (s *StorageMemory) UpdateTTL(sessionId string, ttl time.Duration) error {
+	_, err := s.cache.UpdateExpire(sessionId, ttl)
 	return err
 }
