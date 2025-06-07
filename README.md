@@ -1,0 +1,2 @@
+# coding-common
+Base goframe
