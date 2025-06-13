@@ -63,6 +63,6 @@ func (c *Converter) Bytes(any any) ([]byte, error) {
 			}
 		default:
 		}
-		return dbinary.Encode(any), nil
+		return jbinary.Encode(any), nil
 	}
 }

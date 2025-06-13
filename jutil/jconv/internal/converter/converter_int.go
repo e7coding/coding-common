@@ -98,9 +98,8 @@ func (c *Converter) Int64(any any) (int64, error) {
 		}
 		return c.Int64(rv.Elem().Interface())
 	case reflect.Slice:
-		// TODO: It might panic here for these types.
 		if rv.Type().Elem().Kind() == reflect.Uint8 {
-			return dbinary.DecodeToInt64(rv.Bytes()), nil
+			return jbinary.DecodeToInt64(rv.Bytes()), nil
 		}
 	case reflect.String:
 		var (

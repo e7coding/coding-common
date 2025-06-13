@@ -7,6 +7,7 @@
 package converter
 
 import (
+	"github.com/e7coding/coding-common/errs/jerr"
 	"reflect"
 	"strconv"
 
@@ -27,8 +28,7 @@ func (c *Converter) Float32(any any) (float32, error) {
 	case float64:
 		return float32(value), nil
 	case []byte:
-		// TODO: It might panic here for these types.
-		return dbinary.DecodeToFloat32(value), nil
+		return jbinary.DecodeToFloat32(value), nil
 	default:
 		rv := reflect.ValueOf(any)
 		switch rv.Kind() {
@@ -46,9 +46,7 @@ func (c *Converter) Float32(any any) (float32, error) {
 		case reflect.String:
 			f, err := strconv.ParseFloat(rv.String(), 32)
 			if err != nil {
-				return 0, jerr.WithMsgErrCodef(
-					gcode.CodeInvalidParameter, err, "converting string to float32 failed for: %v", any,
-				)
+				return 0, jerr.WithMsgErrF(err, "converting string to float32 failed for: %v", any)
 			}
 			return float32(f), nil
 		case reflect.Ptr:
@@ -69,9 +67,7 @@ func (c *Converter) Float32(any any) (float32, error) {
 			}
 			v, err := strconv.ParseFloat(s, 32)
 			if err != nil {
-				return 0, jerr.WithMsgErrCodef(
-					gcode.CodeInvalidParameter, err, "converting string to float32 failed for: %v", any,
-				)
+				return 0, jerr.WithMsgErrF(err, "converting string to float32 failed for: %v", any)
 			}
 			return float32(v), nil
 		}
@@ -89,8 +85,7 @@ func (c *Converter) Float64(any any) (float64, error) {
 	case float64:
 		return value, nil
 	case []byte:
-		// TODO: It might panic here for these types.
-		return dbinary.DecodeToFloat64(value), nil
+		return jbinary.DecodeToFloat64(value), nil
 	default:
 		rv := reflect.ValueOf(any)
 		switch rv.Kind() {
@@ -113,9 +108,7 @@ func (c *Converter) Float64(any any) (float64, error) {
 		case reflect.String:
 			f, err := strconv.ParseFloat(rv.String(), 64)
 			if err != nil {
-				return 0, jerr.WithMsgErrCodef(
-					gcode.CodeInvalidParameter, err, "converting string to float64 failed for: %v", any,
-				)
+				return 0, jerr.WithMsgErrF(err, "converting string to float64 failed for: %v", any)
 			}
 			return f, nil
 		case reflect.Ptr:
@@ -136,9 +129,7 @@ func (c *Converter) Float64(any any) (float64, error) {
 			}
 			v, err := strconv.ParseFloat(s, 64)
 			if err != nil {
-				return 0, jerr.WithMsgErrCodef(
-					gcode.CodeInvalidParameter, err, "converting string to float64 failed for: %v", any,
-				)
+				return 0, jerr.WithMsgErrF(err, "converting string to float64 failed for: %v", any)
 			}
 			return v, nil
 		}

@@ -113,7 +113,7 @@ func (c *Converter) Uint64(any any) (uint64, error) {
 		return c.Uint64(rv.Elem().Interface())
 	case reflect.Slice:
 		if rv.Type().Elem().Kind() == reflect.Uint8 {
-			return dbinary.DecodeToUint64(rv.Bytes()), nil
+			return jbinary.DecodeToUint64(rv.Bytes()), nil
 		}
 		return 0, jerr.WithMsgF(
 			`unsupport slice type "%s" for converting to uint64`,
