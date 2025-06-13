@@ -8,10 +8,10 @@
 package httputil
 
 import (
+	"github.com/e7coding/coding-common/encoding/jurl"
 	"net/http"
 	"strings"
 
-	"github.com/e7coding/coding-common/encoding/jurl"
 	"github.com/e7coding/coding-common/internal/empty"
 	"github.com/e7coding/coding-common/jutil/jconv"
 	"github.com/e7coding/coding-common/text/jstr"
@@ -70,7 +70,7 @@ func BuildParams(params interface{}, noUrlEncode ...bool) (encodedParamStr strin
 			if strings.HasPrefix(s, fileUploadingKey) && len(s) > len(fileUploadingKey) {
 				// No url encoding if uploading file.
 			} else {
-				s = durl.Encode(s)
+				s = jurl.Encode(s)
 			}
 		}
 		encodedParamStr += k + "=" + s

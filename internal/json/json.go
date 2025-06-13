@@ -10,6 +10,7 @@ package json
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/e7coding/coding-common/errs/jerr"
 	"io"
 )
 
