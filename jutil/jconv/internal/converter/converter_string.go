@@ -8,6 +8,7 @@ package converter
 
 import (
 	"fmt"
+	"github.com/e7coding/coding-common/errs/jerr"
 	"reflect"
 	"strconv"
 	"time"
@@ -124,9 +125,7 @@ func (c *Converter) String(any any) (string, error) {
 		// Finally, we use json.Marshal to convert.
 		jsonContent, err := json.Marshal(value)
 		if err != nil {
-			return fmt.Sprint(value), jerr.WithMsgErrCodef(
-				gcode.CodeInvalidParameter, err, "error marshaling value to JSON for: %v", value,
-			)
+			return fmt.Sprint(value), jerr.WithMsgErrF(err, "error marshaling value to JSON for: %v", value)
 		}
 		return string(jsonContent), nil
 	}
